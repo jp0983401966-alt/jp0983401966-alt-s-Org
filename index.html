@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math-Man: Neon Maze</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #fff;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .arcade-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+        .neon-border {
+            box-shadow: 0 0 10px #3b82f6, inset 0 0 10px #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+        .neon-text-yellow {
+            text-shadow: 0 0 10px #facc15;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #000;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #facc15;
+        }
+        
+        /* Math-Man Mouth Animation */
+        @keyframes chomp {
+            0%, 100% { clip-path: polygon(100% 50%, 0 0, 0 100%); }
+            50% { clip-path: polygon(100% 50%, 0 40%, 0 60%); }
+        }
+        .animate-chomp {
+            animation: chomp 0.2s infinite;
+        }
+
+        /* Ghost Shape */
+        .ghost-skirt {
+            clip-path: polygon(0% 100%, 0% 20%, 20% 0%, 80% 0%, 100% 20%, 100% 100%, 85% 90%, 70% 100%, 55% 90%, 40% 100%, 25% 90%, 10% 100%);
+        }
+
+        .direction-0 { transform: rotate(0deg); }
+        .direction-90 { transform: rotate(90deg); }
+        .direction-180 { transform: rotate(180deg); }
+        .direction-270 { transform: rotate(270deg); }
+
+        @keyframes pulse-node {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+        }
+        .node-pulse {
+            animation: pulse-node 1s infinite;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+</html>
