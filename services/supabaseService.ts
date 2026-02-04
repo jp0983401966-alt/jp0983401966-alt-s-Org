@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { UserData, GameStats } from '../types';
 
 const import.meta.env.VITE_SUPABASE_URL = 'https://lbdudwiauodhxucneims.supabase.co';
-const import.meta.env.VITE_SUPABASE_ANON_KEY = 'sb_publishable_tGDv96NbR59oJoJBhdVXwQ_jVcsXAUV';
+const import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_tGDv96NbR59oJoJBhdVXwQ_jVcsXAUV';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
