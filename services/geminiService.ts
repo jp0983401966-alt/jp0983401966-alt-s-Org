@@ -34,7 +34,7 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2, initialDelay =
 
 export const generateAnalysis = async (userData: UserData, stats: GameStats): Promise<AIAnalysis> => {
   return withRetry(async () => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Analiza el rendimiento de: ${userData.name}, Dificultad: ${userData.difficulty}, ${stats.mathCorrect} aciertos, ${stats.misses} fallos. Estilo arcade cyberpunk.`,
@@ -60,7 +60,7 @@ export const generateAnalysis = async (userData: UserData, stats: GameStats): Pr
 
 export const generateIntroData = async (userData: UserData): Promise<IntroData> => {
   return withRetry(async () => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
     
     const [imageRes, storyRes] = await Promise.all([
       ai.models.generateContent({
