@@ -5,7 +5,7 @@ import { UserData, GameStats } from '../types';
 const VITE_SUPABASE_URL = 'https://lbdudwiauodhxucneims.supabase.co';
 const VITE_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_tGDv96NbR59oJoJBhdVXwQ_jVcsXAUV';
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+export const supabase = createClient(VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY);
 
 export const saveGameResult = async (userData: UserData, stats: GameStats) => {
   try {
