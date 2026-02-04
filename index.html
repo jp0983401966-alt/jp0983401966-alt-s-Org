@@ -35,13 +35,13 @@
             background: #facc15;
         }
         
-        /* Math-Man Mouth Animation */
+        /* Math-Man Mouth Animation (Pac-Man Style) */
         @keyframes chomp {
-            0%, 100% { clip-path: polygon(100% 50%, 0 0, 0 100%); }
-            50% { clip-path: polygon(100% 50%, 0 40%, 0 60%); }
+            0%, 100% { clip-path: polygon(100% 50%, 100% 0%, 0% 0%, 0% 100%, 100% 100%, 100% 50%, 50% 50%); }
+            50% { clip-path: polygon(100% 50%, 100% 25%, 0% 0%, 0% 100%, 100% 75%, 100% 50%, 50% 50%); }
         }
         .animate-chomp {
-            animation: chomp 0.2s infinite;
+            animation: chomp 0.25s infinite ease-in-out;
         }
 
         /* Ghost Shape */
@@ -51,7 +51,7 @@
 
         .direction-0 { transform: rotate(0deg); }
         .direction-90 { transform: rotate(90deg); }
-        .direction-180 { transform: rotate(180deg); }
+        .direction-180 { transform: rotate(180deg) scaleY(-1); }
         .direction-270 { transform: rotate(270deg); }
 
         @keyframes pulse-node {
@@ -61,6 +61,14 @@
         .node-pulse {
             animation: pulse-node 1s infinite;
         }
+
+        @keyframes win-glow {
+            0%, 100% { box-shadow: 0 0 20px #facc15, inset 0 0 20px #facc15; }
+            50% { box-shadow: 0 0 50px #fff, inset 0 0 30px #fff; }
+        }
+        .animate-win-glow {
+            animation: win-glow 2s infinite;
+        }
     </style>
 <script type="importmap">
 {
@@ -68,7 +76,8 @@
     "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.45.0"
   }
 }
 </script>

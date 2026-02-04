@@ -14,61 +14,80 @@ export interface IntroData {
   story: string;
 }
 
-export const generateAnalysis = async (userData: UserData, stats: GameStats): Promise<AIAnalysis> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `
-    DIAGNÓSTICO DE HARDWARE HUMANO - SISTEMA MATH-MAN ARCADE
-    USUARIO: ${userData.name}
-    NIVEL DE DIFICULTAD: ${userData.difficulty}
-    REGISTROS: ${stats.mathCorrect} aciertos, ${stats.misses} colisiones.
-    Genera un JSON con: fortalezas, debilidades, planEstudio, consejos (estilo retro-gaming).
-  `;
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2, initialDelay = 500): Promise<T> {
+  let delay = initialDelay;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      const isQuotaError = error.message?.includes('429') || error.status === 429 || error.message?.includes('RESOURCE_EXHAUSTED');
+      if (isQuotaError && i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2;
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error("Se superó el número máximo de reintentos");
+}
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          fortalezas: { type: Type.STRING },
-          debilidades: { type: Type.STRING },
-          planEstudio: { type: Type.STRING },
-          consejos: { type: Type.STRING },
+export const generateAnalysis = async (userData: UserData, stats: GameStats): Promise<AIAnalysis> => {
+  return withRetry(async () => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `Analiza el rendimiento de: ${userData.name}, Dificultad: ${userData.difficulty}, ${stats.mathCorrect} aciertos, ${stats.misses} fallos. Estilo arcade cyberpunk.`,
+      config: {
+        systemInstruction: "Eres un sistema de diagnóstico retro de un arcade de los 80. Tu respuesta debe estar en ESPAÑOL y ser un JSON breve.",
+        thinkingConfig: { thinkingBudget: 0 },
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            fortalezas: { type: Type.STRING },
+            debilidades: { type: Type.STRING },
+            planEstudio: { type: Type.STRING },
+            consejos: { type: Type.STRING },
+          },
+          required: ["fortalezas", "debilidades", "planEstudio", "consejos"],
         },
-        required: ["fortalezas", "debilidades", "planEstudio", "consejos"],
       },
-    },
+    });
+    return JSON.parse(response.text || "{}");
   });
-  return JSON.parse(response.text || "{}");
 };
 
 export const generateIntroData = async (userData: UserData): Promise<IntroData> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
-  // 1. Generar Imagen con Gemini 2.5 Flash Image
-  const imageResponse = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-image',
-    contents: `A high-quality 80s neon arcade poster for a game called "Math-Man". Feature a glowing yellow hero in a digital grid maze, vibrant pink and blue synthwave aesthetics, dramatic lighting, cinematic style.`,
-  });
+  return withRetry(async () => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    const [imageRes, storyRes] = await Promise.all([
+      ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: `Retrato cinematográfico hiperrealista de primer plano de un guerrero digital que TIENE EXACTAMENTE ${userData.age} AÑOS. El rostro debe mostrar claramente las facciones propias de una persona de ${userData.age} años de edad (si es niño, facciones infantiles; si es adulto mayor, arrugas y sabiduría; si es joven, vitalidad juvenil). Género: ${userData.gender}. Estilo de combate: ${userData.style}. Poder aura: ${userData.power}. Viste armadura tecnológica de neón inspirada en Tron y los 80. Fondo de laberinto cibernético. Calidad 8k, iluminación dramática de neón.`,
+      }),
+      ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `Escribe la historia de origen breve de ${userData.name}, un experto en ${userData.style} de ${userData.age} años con el poder del ${userData.power} en un laberinto de neón. Máximo 50 palabras, en ESPAÑOL.`,
+        config: { 
+          thinkingConfig: { thinkingBudget: 0 },
+          systemInstruction: "Escribe mini-lore épico en español de un héroe de arcade cyberpunk."
+        }
+      })
+    ]);
 
-  let imageUrl = "";
-  for (const part of imageResponse.candidates?.[0]?.content?.parts || []) {
-    if (part.inlineData) {
-      imageUrl = `data:image/png;base64,${part.inlineData.data}`;
-      break;
+    let imageUrl = "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800";
+    for (const part of imageRes.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        imageUrl = `data:image/png;base64,${part.inlineData.data}`;
+        break;
+      }
     }
-  }
 
-  // 2. Generar Historia con Gemini 3 Flash
-  const storyResponse = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
-    contents: `Escribe una breve historia inspiradora (máximo 100 palabras) sobre el héroe digital "${userData.name}" en el universo de Math-Man. El mundo de neón está siendo consumido por el caos de la desinformación y solo su capacidad de procesar la lógica y las matemáticas puede restaurar el Orden Cuántico. Estilo épico y retro.`,
+    return {
+      imageUrl,
+      story: storyRes.text || "La última esperanza de la red lógica."
+    };
   });
-
-  return {
-    imageUrl: imageUrl || "https://picsum.photos/seed/arcade/800/800",
-    story: storyResponse.text || "La leyenda de Math-Man comienza hoy."
-  };
 };
